@@ -16,16 +16,32 @@
     </div>
   </header>
 
-  <nav id="filters" class="filters" aria-label="Filters">
-    <button class="chip is-active" data-filter="all">All</button>
-    <button class="chip" data-filter="focus">My focus</button>
-    <button class="chip" data-filter="priority">Priority</button>
-    <button class="chip" data-filter="duesoon">Due soon</button>
+  <!-- Smart lists (To Do style) -->
+  <nav id="smartlists" class="filters" aria-label="Lists">
+    <button class="chip is-active" data-list="myday">&#9728; My Day</button>
+    <button class="chip" data-list="today">Today</button>
+    <button class="chip" data-list="planned">Planned</button>
+    <button class="chip" data-list="all">All</button>
+    <button class="chip" data-list="priority">Priority</button>
+    <button class="chip" data-list="focus">My focus</button>
+    <button class="chip" data-list="completed">&#10003; Completed</button>
   </nav>
+
+  <!-- Agent filter -->
+  <nav id="agentbar" class="agentbar" aria-label="Filter by agent"></nav>
 
   <main id="app">
     <ul id="list" class="list" aria-live="polite"></ul>
-    <p id="empty" class="empty" hidden>Nothing here. 🎉</p>
+
+    <section id="completedGroup" class="completed-group" hidden>
+      <button id="completedToggle" class="completed-toggle" aria-expanded="false">
+        <span id="completedToggleLabel">&#10003; Completed</span>
+        <span class="chev">&#9656;</span>
+      </button>
+      <ul id="completedList" class="list" hidden></ul>
+    </section>
+
+    <p id="empty" class="empty" hidden>Nothing here. &#127881;</p>
     <p id="status" class="status"></p>
   </main>
 
@@ -35,12 +51,12 @@
       <h2>Settings</h2>
       <label for="tokenInput">GitHub token</label>
       <p class="hint">
-        Fine-grained PAT (repo <code>Apter</code>: Issues R/W, Projects R/W) or a
-        classic PAT with <code>repo</code> + <code>project</code>. Stored only in this
+        Classic PAT with <code>repo</code> + <code>project</code> scopes
+        (fine-grained tokens can't write personal projects). Stored only in this
         browser's localStorage — never sent anywhere but GitHub.
       </p>
       <input id="tokenInput" type="password" autocomplete="off" spellcheck="false"
-             placeholder="github_pat_… or ghp_…" />
+             placeholder="ghp_…" />
       <div class="modal-actions">
         <button id="clearTokenBtn" class="btn btn-ghost">Clear</button>
         <button id="saveTokenBtn" class="btn btn-primary">Save</button>

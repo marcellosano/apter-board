@@ -104,9 +104,20 @@ body {
   border-radius: 50%;
   background: none;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 15px;
+  line-height: 1;
   transition: border-color .15s, background .15s;
 }
-.circle:active { background: var(--done); border-color: var(--done); }
+.circle:hover { border-color: var(--done); }
+.circle.checked { background: var(--done); border-color: var(--done); }
+
+/* Completed task row */
+.row.is-done { opacity: .6; }
+.row.is-done .row-title { text-decoration: line-through; color: var(--muted); }
 
 .row-main { flex: 1 1 auto; min-width: 0; }
 .row-title {
@@ -147,7 +158,114 @@ body {
 }
 .due.overdue { color: var(--danger); font-weight: 600; }
 .due.soon { color: var(--p1); }
-.num { font-size: 12px; color: var(--muted); }
+.num { font-size: 12px; color: var(--muted); text-decoration: none; }
+.num:hover { text-decoration: underline; }
+
+/* Agent tags + My Day sun on a row */
+.agent-tag {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent);
+  background: rgba(9,105,218,.1);
+  border: 1px solid rgba(9,105,218,.25);
+  padding: 1px 7px;
+  border-radius: 999px;
+}
+.sun-tag { font-size: 13px; color: var(--p1); }
+.muted-chip { color: var(--muted); }
+
+/* Agent filter bar */
+.agentbar {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 0 4px 12px;
+  -webkit-overflow-scrolling: touch;
+}
+.agent-chip {
+  flex: 0 0 auto;
+  background: var(--surface);
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 5px 11px;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.agent-chip.is-active { background: var(--text); color: var(--bg); border-color: var(--text); }
+
+/* Planned group headers */
+.group-header {
+  list-style: none;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .03em;
+  padding: 16px 8px 6px;
+}
+
+/* Collapsible Completed group */
+.completed-group { margin-top: 8px; }
+.completed-toggle {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 14px 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.completed-toggle .chev { transition: transform .15s; }
+.completed-group.is-open .chev { transform: rotate(90deg); }
+
+/* Inline detail editor */
+.detail {
+  margin-top: 12px;
+  padding: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.detail-row { display: flex; align-items: center; gap: 8px; }
+.detail-row.wrap { flex-wrap: wrap; }
+.detail-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+  color: var(--muted);
+  width: 56px;
+  flex: 0 0 56px;
+}
+.detail input[type="date"] {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 7px 9px;
+  font-size: 15px;
+}
+.mini-btn {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.mini-btn.on { background: var(--accent); color: #fff; border-color: var(--accent); }
 
 /* Inline date editor */
 .due-edit {
