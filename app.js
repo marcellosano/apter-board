@@ -11,8 +11,15 @@ const PROJECT_ID = "PVT_kwHOAGedRc4BaBll"; // Project #2
 const FIELD_DUE = "PVTF_lAHOAGedRc4BaBllzhVPu-c"; // DATE
 const FOCUS_LABEL = "needs-human";
 const TOKEN_KEY = "apter_board_token";
-const MYDAY_KEY = "apter_board_myday";
+const MYDAY_LABEL = "my-day"; // synced across devices via GitHub label
 const PRIORITY_RANK = { "P0-now": 0, "P1-next": 1, "P2-later": 2 };
+
+// Human-routing flags an agent (or Marcello) can set on a task.
+const FLAGS = [
+  { label: "needs-human", text: "Needs me" },
+  { label: "decision", text: "Decision" },
+  { label: "blocked", text: "Blocked" },
+];
 
 // Agents are GitHub labels `agent:<key>` (the Apter routing convention).
 const AGENTS = [
@@ -56,25 +63,8 @@ const getToken = () => localStorage.getItem(TOKEN_KEY) || "";
 const setToken = (t) => localStorage.setItem(TOKEN_KEY, t);
 const clearToken = () => localStorage.removeItem(TOKEN_KEY);
 
-// ---- My Day (localStorage, resets at local midnight like To Do) ----
-function getMyDay() {
-  let raw = {};
-  try { raw = JSON.parse(localStorage.getItem(MYDAY_KEY) || "{}"); } catch { raw = {}; }
-  if (raw.date !== todayStr()) {
-    raw = { date: todayStr(), numbers: [] };
-    localStorage.setItem(MYDAY_KEY, JSON.stringify(raw));
-  }
-  return new Set(raw.numbers || []);
-}
-function saveMyDay(set) {
-  localStorage.setItem(MYDAY_KEY, JSON.stringify({ date: todayStr(), numbers: [...set] }));
-}
-function inMyDay(number) { return getMyDay().has(number); }
-function toggleMyDay(number) {
-  const set = getMyDay();
-  set.has(number) ? set.delete(number) : set.add(number);
-  saveMyDay(set);
-}
+// ---- My Day is a synced GitHub label (my-day), shared across devices ----
+const inMyDay = (item) => item.labels.includes(MYDAY_LABEL);
 
 // ---- Transports ----
 async function gql(query, variables = {}) {
@@ -205,7 +195,7 @@ function selectActive() {
   const open = applyAgent(items.filter((i) => !i.done));
   switch (activeList) {
     case "myday":
-      return { active: open.filter((i) => inMyDay(i.number)).sort(byPriorityThenDue) };
+      return { active: open.filter((i) => inMyDay(i)).sort(byPriorityThenDue) };
     case "today":
       return { active: open.filter((i) => i.due && i.due <= todayStr()).sort(byDueThenPriority) };
     case "planned":
@@ -228,6 +218,7 @@ function selectCompleted() {
 // ---- Render ----
 function render() {
   const sel = selectActive();
+  updateBadges();
   listEl.innerHTML = "";
 
   if (sel.completedOnly) {
@@ -269,6 +260,14 @@ function listTitle() {
   return { myday: "in My Day", today: "due", planned: "planned", priority: "priority", focus: "for you", all: "open" }[activeList] || "open";
 }
 function agentSuffix() { return agentFilter ? ` · ${agentName(agentFilter)}` : ""; }
+
+// Badge the "My focus" chip with the count of open needs-human tasks —
+// this is the human inbox: where an agent flags a decision/action for Marcello.
+function updateBadges() {
+  const n = items.filter((i) => !i.done && i.labels.includes("needs-human")).length;
+  const chip = document.querySelector('#smartlists .chip[data-list="focus"]');
+  if (chip) chip.innerHTML = `My focus${n ? ` <sup class="badge">${n}</sup>` : ""}`;
+}
 function agentName(key) { return AGENTS.find((a) => a.key === key)?.label || key; }
 
 function groupHeader(label) {
@@ -304,7 +303,7 @@ function renderRow(item) {
   meta.appendChild(priorityPill(item.priority));
   meta.appendChild(dueChip(item.due, item.done));
   for (const a of item.agents) meta.appendChild(agentTag(a));
-  if (inMyDay(item.number) && !item.done) meta.appendChild(sunTag());
+  if (inMyDay(item) && !item.done) meta.appendChild(sunTag());
   const num = document.createElement("a");
   num.className = "num";
   num.href = item.url;
@@ -381,18 +380,20 @@ function toggleDetail(item, main) {
   dueRow.appendChild(dateInput);
   dueRow.appendChild(clearDue);
 
-  // My Day
+  // My Day (synced label)
   const dayRow = document.createElement("div");
   dayRow.className = "detail-row";
   dayRow.innerHTML = `<span class="detail-label">My Day</span>`;
   const dayBtn = document.createElement("button");
-  dayBtn.className = "mini-btn" + (inMyDay(item.number) ? " on" : "");
-  dayBtn.innerHTML = inMyDay(item.number) ? "&#9728; In My Day — remove" : "&#9728; Add to My Day";
-  dayBtn.addEventListener("click", () => {
-    toggleMyDay(item.number);
-    toast(inMyDay(item.number) ? "Added to My Day" : "Removed from My Day");
-    main.querySelector(".detail")?.remove();
-    render();
+  dayBtn.className = "mini-btn" + (inMyDay(item) ? " on" : "");
+  dayBtn.innerHTML = inMyDay(item) ? "&#9728; In My Day — remove" : "&#9728; Add to My Day";
+  dayBtn.addEventListener("click", async () => {
+    try {
+      const now = await toggleLabel(item, MYDAY_LABEL, dayBtn);
+      toast(now ? "Added to My Day" : "Removed from My Day");
+      main.querySelector(".detail")?.remove();
+      render();
+    } catch { /* handled in toggleLabel */ }
   });
   dayRow.appendChild(dayBtn);
 
@@ -409,9 +410,28 @@ function toggleDetail(item, main) {
     agentRow.appendChild(b);
   }
 
+  // Flags (human routing: Needs me / Decision / Blocked)
+  const flagRow = document.createElement("div");
+  flagRow.className = "detail-row wrap";
+  flagRow.innerHTML = `<span class="detail-label">Flag</span>`;
+  for (const f of FLAGS) {
+    const b = document.createElement("button");
+    b.className = "mini-btn" + (item.labels.includes(f.label) ? " on" : "");
+    b.textContent = f.text;
+    b.addEventListener("click", async () => {
+      try {
+        const now = await toggleLabel(item, f.label, b);
+        toast(now ? `Flagged: ${f.text}` : `Cleared: ${f.text}`);
+        render();
+      } catch { /* handled */ }
+    });
+    flagRow.appendChild(b);
+  }
+
   box.appendChild(dueRow);
   box.appendChild(dayRow);
   box.appendChild(agentRow);
+  box.appendChild(flagRow);
   main.appendChild(box);
 }
 
@@ -447,24 +467,35 @@ async function setDue(item, date, main) {
   } catch (err) { item.due = prev; handleError(err); }
 }
 
-async function toggleAgent(item, key, btn) {
-  const on = item.agents.includes(key);
-  btn.classList.toggle("on", !on);
+// Add/remove a single label on an issue (REST). Returns the new on/off state.
+// Keeps item.labels and the derived item.agents in sync. Throws on failure.
+async function toggleLabel(item, name, btn) {
+  const on = item.labels.includes(name);
+  if (btn) btn.classList.toggle("on", !on);
   try {
     if (on) {
-      await rest("DELETE", `/repos/${OWNER}/${REPO}/issues/${item.number}/labels/${encodeURIComponent(agentLabel(key))}`);
-      item.agents = item.agents.filter((a) => a !== key);
-      item.labels = item.labels.filter((l) => l !== agentLabel(key));
-      toast(`Unassigned ${agentName(key)}`);
+      await rest("DELETE", `/repos/${OWNER}/${REPO}/issues/${item.number}/labels/${encodeURIComponent(name)}`);
+      item.labels = item.labels.filter((l) => l !== name);
     } else {
-      await rest("POST", `/repos/${OWNER}/${REPO}/issues/${item.number}/labels`, { labels: [agentLabel(key)] });
-      item.agents.push(key);
-      item.labels.push(agentLabel(key));
-      toast(`Assigned ${agentName(key)}`);
+      await rest("POST", `/repos/${OWNER}/${REPO}/issues/${item.number}/labels`, { labels: [name] });
+      item.labels.push(name);
     }
+    item.agents = item.labels.filter((l) => l.startsWith("agent:")).map((l) => l.slice(6));
+    return !on;
+  } catch (err) {
+    if (btn) btn.classList.toggle("on", on);
+    handleError(err);
+    throw err;
+  }
+}
+
+async function toggleAgent(item, key, btn) {
+  try {
+    const now = await toggleLabel(item, agentLabel(key), btn);
+    toast(now ? `Assigned ${agentName(key)}` : `Unassigned ${agentName(key)}`);
     renderAgentBar();
     render();
-  } catch (err) { btn.classList.toggle("on", on); handleError(err); }
+  } catch { /* handled in toggleLabel */ }
 }
 
 // ---- Agent filter bar ----

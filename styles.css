@@ -81,6 +81,16 @@ body {
   color: #fff;
   border-color: var(--accent);
 }
+.chip .badge {
+  background: var(--p0);
+  color: #fff;
+  border-radius: 999px;
+  padding: 0 6px;
+  margin-left: 2px;
+  font-size: 11px;
+  font-weight: 700;
+  vertical-align: top;
+}
 
 /* List */
 .list { list-style: none; margin: 0; padding: 0; }
