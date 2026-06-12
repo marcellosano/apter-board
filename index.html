@@ -8,44 +8,56 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <header class="topbar">
-    <h1>Apter Board</h1>
-    <div class="topbar-actions">
+
+  <!-- ============ HOME (To Do-style list of lists) ============ -->
+  <section id="home" class="view">
+    <header class="home-head">
+      <img id="avatar" class="avatar" alt="" hidden />
+      <div class="home-id">
+        <div id="userName" class="user-name">Apter Board</div>
+      </div>
+      <button id="searchBtn" class="icon-btn" title="Search" aria-label="Search">&#128269;</button>
+      <button id="homeSettingsBtn" class="icon-btn" title="Settings" aria-label="Settings">&#9881;</button>
+    </header>
+
+    <nav id="smartNav" class="nav-list" aria-label="Smart lists"></nav>
+
+    <div class="nav-heading">Categories</div>
+    <nav id="catNav" class="nav-list" aria-label="Categories"></nav>
+
+    <div class="nav-heading">Agents</div>
+    <nav id="agentNav" class="nav-list" aria-label="Agents"></nav>
+
+    <p id="homeStatus" class="status"></p>
+  </section>
+
+  <!-- ============ LIST DETAIL (tasks) ============ -->
+  <section id="detail" class="view" hidden>
+    <header class="topbar">
+      <button id="backBtn" class="icon-btn" title="Back" aria-label="Back">&#8592;</button>
+      <h1 id="listTitle">List</h1>
       <button id="refreshBtn" class="icon-btn" title="Refresh" aria-label="Refresh">&#x21bb;</button>
-      <button id="settingsBtn" class="icon-btn" title="Settings" aria-label="Settings">&#9881;</button>
-    </div>
-  </header>
+    </header>
 
-  <!-- Smart lists (To Do style) -->
-  <nav id="smartlists" class="filters" aria-label="Lists">
-    <button class="chip is-active" data-list="myday">&#9728; My Day</button>
-    <button class="chip" data-list="today">Today</button>
-    <button class="chip" data-list="planned">Planned</button>
-    <button class="chip" data-list="all">All</button>
-    <button class="chip" data-list="priority">Priority</button>
-    <button class="chip" data-list="focus">My focus</button>
-    <button class="chip" data-list="completed">&#10003; Completed</button>
-  </nav>
+    <input id="searchInput" class="search-input" type="search" placeholder="Search tasks…" hidden />
 
-  <!-- Agent filter -->
-  <nav id="agentbar" class="agentbar" aria-label="Filter by agent"></nav>
+    <main>
+      <ul id="list" class="list" aria-live="polite"></ul>
 
-  <main id="app">
-    <ul id="list" class="list" aria-live="polite"></ul>
+      <section id="completedGroup" class="completed-group" hidden>
+        <button id="completedToggle" class="completed-toggle" aria-expanded="false">
+          <span id="completedToggleLabel">&#10003; Completed</span>
+          <span class="chev">&#9656;</span>
+        </button>
+        <ul id="completedList" class="list" hidden></ul>
+      </section>
 
-    <section id="completedGroup" class="completed-group" hidden>
-      <button id="completedToggle" class="completed-toggle" aria-expanded="false">
-        <span id="completedToggleLabel">&#10003; Completed</span>
-        <span class="chev">&#9656;</span>
-      </button>
-      <ul id="completedList" class="list" hidden></ul>
-    </section>
+      <p id="empty" class="empty" hidden>Nothing here. &#127881;</p>
+      <p id="status" class="status"></p>
+    </main>
+  </section>
 
-    <p id="empty" class="empty" hidden>Nothing here. &#127881;</p>
-    <p id="status" class="status"></p>
-  </main>
-
-  <!-- Settings / token panel -->
+  <!-- ============ Settings / token (shared) ============ -->
   <div id="settings" class="modal" hidden>
     <div class="modal-card">
       <h2>Settings</h2>

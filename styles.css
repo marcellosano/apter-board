@@ -43,8 +43,78 @@ body {
   background: var(--bg);
   border-bottom: 1px solid var(--border);
 }
-.topbar h1 { font-size: 20px; margin: 0; font-weight: 600; }
+.topbar h1 { font-size: 20px; margin: 0; font-weight: 600; flex: 1; }
 .topbar-actions { display: flex; gap: 4px; }
+
+/* ===== Home: To Do-style list of lists ===== */
+.view { animation: fade .12s ease; }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+
+.home-head {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 6px 12px;
+  background: var(--bg);
+}
+.avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+.home-id { flex: 1; min-width: 0; }
+.user-name { font-size: 20px; font-weight: 700; }
+
+.nav-heading {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--muted);
+  padding: 18px 10px 6px;
+}
+.nav-list { display: flex; flex-direction: column; }
+.nav-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  background: none;
+  border: none;
+  border-radius: 10px;
+  padding: 13px 10px;
+  font-size: 17px;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+}
+.nav-item:active { background: var(--surface-2); }
+.nav-left { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.nav-icon { font-size: 19px; width: 24px; text-align: center; }
+.dot { width: 14px; height: 14px; border-radius: 50%; margin: 0 5px; flex: 0 0 auto; }
+.nav-title { font-size: 17px; }
+.nav-count { color: var(--muted); font-size: 15px; }
+
+.badge {
+  background: var(--p0);
+  color: #fff;
+  border-radius: 999px;
+  padding: 0 6px;
+  font-size: 11px;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
+.search-input {
+  width: 100%;
+  margin: 10px 0 4px;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 11px 12px;
+  font-size: 16px;
+}
 .icon-btn {
   background: none;
   border: none;
