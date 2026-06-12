@@ -1,0 +1,6 @@
+# Nothing secret lives in this repo — the token is entered in-browser and kept in
+# localStorage only. These are just local cruft guards.
+.DS_Store
+*.log
+.vscode/
+.idea/
